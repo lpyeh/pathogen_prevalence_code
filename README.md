@@ -10,7 +10,7 @@ Make sure to install the following:
 * dill
 * gzip
 
-Set the paths for:
+Set the paths for (in pathogen_cooccurrence):
 
 * ngram_path (where the ngram files are stored)
 * output_dir (where you want your output to go)
