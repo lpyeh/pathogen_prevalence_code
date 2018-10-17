@@ -3,6 +3,9 @@ from collections import defaultdict
 import re
 import json
 from ast import literal_eval
+import ahocorasick
+import pickle
+import os
 
 # Returns list of words to use as target words 
 def dictionary_text(url):
@@ -35,16 +38,19 @@ def pathogen_text(path):
     return pathogen_list
 
 
-# Gets list of all possible variations of word, given stem
 def complete_dictionary(text_list):
-    dictionary_path = "/Users/leigh/Desktop/words_dictionary.json"
 
-    with open(dictionary_path) as words:
+    with open('/Users/leigh/Desktop/words_dictionary.json') as words:
         words_dictionary = json.load(words)
-        for text in text_list:
-            for key in words_dictionary:
-                if key.startswith(text):
-                    text_list.append(key)
+
+    A = ahocorasick.Automaton()
+
+    for index, word in enumerate(words_dictionary):
+        A.add_word(word, (index, word))
+
+    for item in text_list:
+        print(item)
+        print(list(A.keys(item)))
 
 
 # getNgrams function, modified from https://github.com/encopy/google-ngrams
@@ -65,7 +71,6 @@ def getNgrams(query):
     return params['content'], df
 
 
-
 # runQuery function, modified from https://github.com/encopy/google-ngram
 def runQuery(string):
     filename = '%s-%s-%d-%d.csv' % (string, "eng_us_2012_corpus", 1800, 2000)
@@ -77,18 +82,14 @@ def runQuery(string):
         df.to_csv(filename, index=False)
         print('Data saved to %s' % filename)
 
-    
-
 
 if __name__ == '__main__':
-    MFD_url = "https://www.moralfoundations.org/sites/default/files/files/downloads/moral%20foundations%20dictionary.dic"
+    MFD_url = \
+        "https://www.moralfoundations.org/sites/default/files/files/downloads/moral%20foundations%20dictionary.dic"
     pathogen_path = "Put path here"
 
     target_words = dictionary_text(MFD_url)
     # base_words = pathogen_text(pathogen_path)
     complete_dictionary(target_words)
     query = ' '.join([word for word in target_words])
-        
-
-    print(target_words)
-    
+    # print(target_words)

@@ -2,7 +2,6 @@ from __future__ import print_function
 import phrasefinder as pf
 
 def main():
-    # Do queries need a question mark section???
     query = 'This is a ???'
 
     # Set phrasefinder options
