@@ -37,8 +37,10 @@ def runQuery(argumentString):
     query = ' '.join([arg for arg in arguments if not arg.startswith('-')])
     
     params = [arg for arg in arguments if arg.startswith('-')]
+    
+       
     corpus, startYear, endYear, smoothing = 'eng_2012', 1800, 2008, 3
-    printHelp, caseInsensitive, allData = False, True, True
+    caseInsensitive, allData = True, True
     toSave, toPrint, toPlot = True, False, False
 
     url, urlquery, df = getNgrams(query, corpus, startYear, endYear,
