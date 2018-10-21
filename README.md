@@ -9,11 +9,12 @@ Make sure to install the following:
 * requests
 * dill
 * gzip
+* ahocorasick
 
-Set the paths for (in pathogen_cooccurrence):
+Set the paths for (in pathogen_ngrams):
 
-* ngram_path (where the ngram files are stored)
-* output_dir (where you want your output to go)
-* targetWordPath (where the target words are located)
+* base_words_path = path to file that stores the base words
+* target_words_path = path to file that stores target words
 
-Note: targetWordPath file must be a comma-delimited .txt file, with all the words on one line (no newlines)
+Note: Both files must be a text file with each word on a new line
+
