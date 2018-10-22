@@ -12,8 +12,12 @@ import shutil
 import itertools
 import pandas as pd
 import sys
+import csv
 
-# Returns list of words to use as target words 
+
+'''
+Returns a list of words from the Moral Foundations Dictionary website
+'''
 def dictionary_text(url):
     MFD = []
     # This pattern includes the * on the end of the words that have it in the dictionary,
@@ -38,22 +42,25 @@ def dictionary_text(url):
     return MFD
 
 
+'''
+Returns a list of words given in text file
+Requires: Text file be formatted with one word on each line
+'''
 def get_words(path):
     word_list = open(path).read().splitlines()
     # print(word_list)
     return word_list
-'''
-# Returns list of words to use as base words (AKA pathogen prevalence words)
-def pathogen_text(path):
-    pathogen_list = []
-    return pathogen_list
 
+
+'''
+Returns a list of expanded words from text_list by using a large English dictionary (if there are incomplete lemmas in the text_list)
 '''
 def complete_dictionary(text_list):
     complete_list = []
     with open('words_dictionary.json') as words:
         words_dictionary = json.load(words)
-
+    
+    # Use ahocorasick to make looking up words faster
     A = ahocorasick.Automaton()
 
     for index, word in enumerate(words_dictionary):
@@ -65,28 +72,48 @@ def complete_dictionary(text_list):
     return list(itertools.chain.from_iterable(complete_list))
 
 
+'''
+ngrams uses run function from getngrams.py from github.com/econpy/google-ngrams
+'''
 def ngrams(mfd_list):
     if len(mfd_list) > 10:
         j = 0
         while j < len(mfd_list):
             run(mfd_list[j:j + 10])
+            j += 10
     else:
         run(mfd_list)
     print("Finished getting ngrams for the text list")
 
 
+'''
+Since getngrams.py can only handle a certain number of queries at a time (about 10-15), 
+merge_csvs merges all the CSV files in current directory into one master one
+'''
 def merge_csvs(length):
-    combined_csv = pd.concat([pd.read_csv(f, header=None) for f in os.listdir(os.getcwd()) if f.endswith('.csv')], ignore_index=True)
+    if not os.path.isdir('CSVs'):
+        os.mkdir('CSVs')
+
+    master_list = []
+    for each_file in os.listdir(os.getcwd()):
+        if each_file.endswith('.csv') and not each_file.startswith(length):
+            master_list.append(pd.read_csv(each_file, parse_dates=[0]))
+            os.remove(each_file)
+
+    combined_csv = pd.concat(master_list, axis=1)
+    file_name = length + "-MFD-combined.csv"
+    os.chdir('CSVs')
     # print(combined_csv)
-    combined_csv.to_csv(length + "MFD-combined-csv.csv", index=False)
+    combined_csv.to_csv(file_name, index=False)
+
 
 if __name__ == '__main__':
     
     arg_string = ' '.join(sys.argv[1:])
     params = [arg for arg in arg_string if arg.startswith('-')]
-    if params is '':
-        long_mfd = False
-        short_mfd = True
+    
+    long_mfd = False
+    short_mfd = True
     
     for param in params:
         if '-long' in param:
@@ -97,12 +124,10 @@ if __name__ == '__main__':
             long_mfd = True
             short_mfd = True
     
-
-
     # pathogen_path = "Put path here"
     mfd_url = \
             'https://www.moralfoundations.org/sites/default/files/files/downloads/moral%20foundations%20dictionary.dic'
-    base_words_path = "/Users/leighyeh/Desktop/pathogen_prevalence_code/MFD.txt"
+    base_words_path = "/Users/leigh/Desktop/pathogen_prevalence_code/MFD.txt"
     base_words = get_words(base_words_path)
     full_mfd = dictionary_text(mfd_url)
     # print(full_mfd)
