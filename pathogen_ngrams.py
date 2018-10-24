@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#/usr/bin/python
 import requests
 from collections import defaultdict
 import re
@@ -107,23 +107,27 @@ def merge_csvs(length):
     combined_csv.to_csv(file_name, index=False)
 
 
+def add_value_averages(file_name):
+    pd.read_csv(file_name)
+
+
+
 if __name__ == '__main__':
     
-    arg_string = ' '.join(sys.argv[1:])
-    params = [arg for arg in arg_string if arg.startswith('-')]
+    arg_string = ' '.join(sys.argv[1:]).lower()
+    # params = [arg for arg in arg_string if arg.startswith('-')]
     
     long_mfd = False
-    short_mfd = True
+    short_mfd = False
     
-    for param in params:
-        if '-long' in param:
-            long_mfd = True
-        elif '-short' in param:
-            short_mfd = True
-        elif '-both' in param:
-            long_mfd = True
-            short_mfd = True
-    
+    if arg_string == '-long':
+        long_mfd = True
+    elif arg_string == '-short':
+        short_mfd = True
+    elif arg_string == '-both':
+        long_mfd = True
+        short_mfd = True
+
     # pathogen_path = "Put path here"
     mfd_url = \
             'https://www.moralfoundations.org/sites/default/files/files/downloads/moral%20foundations%20dictionary.dic'
@@ -133,12 +137,21 @@ if __name__ == '__main__':
     # print(full_mfd)
     expanded_mfd = complete_dictionary(full_mfd)
 
+    # write expanded_mfd to text file
+    with open("long_mfd.txt", "w") as outfile:
+        for word in expanded_mfd:
+            outfile.write(word + '\n')
+
     if long_mfd:
+        print("Getting ngrams for long MFD")
         ngrams(expanded_mfd)
+        print("Merging all the CSVs")
         merge_csvs("long")
     
     if short_mfd:
+        print("Getting ngrams for short MFD")
         ngrams(base_words)
+        print("Merging all the CSVs")
         merge_csvs("short")
     
     # merge_csvs("merged")
