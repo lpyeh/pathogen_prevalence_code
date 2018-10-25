@@ -13,6 +13,22 @@ import itertools
 import pandas as pd
 import sys
 import csv
+from collections import defaultdict
+
+
+value_dictionary = {
+        'HarmVirtue': '01',
+        'HarmVice': '02', 
+        'FairnessVirtue': '03',
+        'FairnessVice': '04',
+        'IngroupVirtue': '05',
+        'IngroupVice': '06',
+        'AuthorityVirtue': '07',
+        'AuthorityVice': '08',
+        'PurityVirtue': '09',
+        'PurityVice': '10',
+        'MoralityGeneral': '11'
+        }
 
 
 '''
@@ -20,12 +36,14 @@ Returns a list of words from the Moral Foundations Dictionary website
 '''
 def dictionary_text(url):
     MFD = []
-    # This pattern includes the * on the end of the words that have it in the dictionary,
-    # take it out of re.compile if we don't want it
-    r = re.compile(r'([a-zA-Z]+)')
+    MFD_dict = defaultdict(int)
+
+    # Gets text
+    text_pattern = re.compile(r'([a-zA-Z]+)')
+    # Gets number associated with word (value category)
+    num_pattern = re.compile(r'([0-9][0-9])')
     f = requests.get(url)
 
-    # TODO: Do we want the mapping from word to type?
     for line in f.iter_lines():
         line = line.translate(None, b'%\t').decode()
         MFD.append(line)
@@ -35,11 +53,14 @@ def dictionary_text(url):
     # Get rid of empty spots in list
     MFD = list(filter(None, MFD))
 
-    # Clean up text, now have a list of words from MFD
     for line in range(1, len(MFD)):
-        text = r.search(MFD[line])
+        value = num_pattern.search(MFD[line])
+        text = text_pattern.search(MFD[line])
+        # MFD dictionary with (word : value category)
+        MFD_dict[text.group(0)] = value.group(0)
         MFD[line] = text.group(0)
-    return MFD
+    
+    return MFD, MFD_dict
 
 
 '''
@@ -105,18 +126,18 @@ def merge_csvs(length):
     os.chdir('CSVs')
     # print(combined_csv)
     combined_csv.to_csv(file_name, index=False)
+    add_value_averages(file_name)
 
 
 def add_value_averages(file_name):
-    pd.read_csv(file_name)
-
+    pd.read_csv(file_name, names=column_names)
+    print(
 
 
 if __name__ == '__main__':
-    
     arg_string = ' '.join(sys.argv[1:]).lower()
-    # params = [arg for arg in arg_string if arg.startswith('-')]
     
+    short_mfd_dict = defaultdict(int)
     long_mfd = False
     short_mfd = False
     
@@ -131,11 +152,17 @@ if __name__ == '__main__':
     # pathogen_path = "Put path here"
     mfd_url = \
             'https://www.moralfoundations.org/sites/default/files/files/downloads/moral%20foundations%20dictionary.dic'
-    base_words_path = "/Users/leigh/Desktop/pathogen_prevalence_code/MFD.txt"
-    base_words = get_words(base_words_path)
-    full_mfd = dictionary_text(mfd_url)
-    # print(full_mfd)
-    expanded_mfd = complete_dictionary(full_mfd)
+    mfd_path = "/Users/leigh/Desktop/pathogen_prevalence_code/MFD.txt"
+    short_mfd = get_words(mfd_path)
+    mfd_list, long_mfd_dict = dictionary_text(mfd_url)
+    
+    for word in short_mfd:
+        if word in long_mfd_dict:
+            short_mfd_dict[word] = long_mfd_dict[word]
+
+
+    '''
+    expanded_mfd = complete_dictionary(mfd_list)
 
     # write expanded_mfd to text file
     with open("long_mfd.txt", "w") as outfile:
@@ -150,8 +177,9 @@ if __name__ == '__main__':
     
     if short_mfd:
         print("Getting ngrams for short MFD")
-        ngrams(base_words)
+        ngrams(short_mfd)
         print("Merging all the CSVs")
         merge_csvs("short")
     
     # merge_csvs("merged")
+    '''
