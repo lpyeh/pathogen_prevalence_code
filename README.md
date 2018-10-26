@@ -1,6 +1,7 @@
 # pathogen_prevalence_code
 
-## Set Up
+## Dependencies
+_Requires Python version 3+_
 Make sure to install the following:
 
 * pickle
