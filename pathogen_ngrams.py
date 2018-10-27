@@ -178,15 +178,13 @@ if __name__ == '__main__':
     
     short_mfd_dict = defaultdict(list)
     long = False
-    short = False
+    short = True
     
     if arg_string == '-long':
         long = True
-    elif arg_string == '-short':
-        short = True
+        short = False
     elif arg_string == '-both':
         long = True
-        short = True
 
     # pathogen_path = "Put path here"
     mfd_url = \
