@@ -19,3 +19,13 @@ Set the paths for (in pathogen_ngrams):
 
 Note: Both files must be a text file with each word on a new line
 
+## Running
+python pathogen_ngrams.py -optionalflag
+
+optionalflag:
+* -short: for the short version of MFD
+* -long: for the long version of MFD
+* -both: for both
+
+If no flag is specified, short is the default
+
